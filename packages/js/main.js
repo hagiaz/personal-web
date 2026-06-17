@@ -21,6 +21,9 @@ if (navClose) {
   navClose.addEventListener("click", () => {
     navMenu.classList.remove("show-menu");
   });
+  navClose.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") navMenu.classList.remove("show-menu");
+  });
 }
 
 /*==================== REMOVE MENU MOBILE ====================*/
@@ -32,6 +35,14 @@ function linkAction() {
   if (navMenuEl) navMenuEl.classList.remove("show-menu");
 }
 navLink.forEach((n) => n.addEventListener("click", linkAction));
+
+// Close menu when clicking outside (mobile)
+document.addEventListener("click", (e) => {
+  if (!navMenu || !navToggle) return;
+  if (navMenu.classList.contains("show-menu") && !navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+    navMenu.classList.remove("show-menu");
+  }
+});
 
 /*==================== ACCORDION SKILLS ====================*/
 const skillsContent = document.getElementsByClassName("skills__content"),
@@ -222,5 +233,11 @@ if (themeButton) {
     // We save the theme and the current icon that the user chose
     localStorage.setItem("selected-theme", getCurrentTheme());
     localStorage.setItem("selected-icon", getCurrentIcon());
+  });
+  themeButton.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      themeButton.click();
+    }
   });
 }
