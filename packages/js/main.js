@@ -9,6 +9,10 @@ if (navToggle) {
   navToggle.addEventListener("click", () => {
     navMenu.classList.add("show-menu");
   });
+  // allow keyboard accessibility
+  navToggle.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") navMenu.classList.add("show-menu");
+  });
 }
 
 /*===== MENU HIDDEN =====*/
@@ -23,9 +27,9 @@ if (navClose) {
 const navLink = document.querySelectorAll(".nav__link");
 
 function linkAction() {
-  const navMenu = document.getElementById("nav-menu");
+  const navMenuEl = document.getElementById("nav-menu");
   // When we click on each nav__link, we remove the show-menu class
-  navMenu.classList.remove("show-menu");
+  if (navMenuEl) navMenuEl.classList.remove("show-menu");
 }
 navLink.forEach((n) => n.addEventListener("click", linkAction));
 
@@ -34,9 +38,9 @@ const skillsContent = document.getElementsByClassName("skills__content"),
   skillsHeader = document.querySelectorAll(".skills__header");
 
 function toggleSkills() {
-  let itemClass = this.parentNode.className;
+  const itemClass = this.parentNode.className;
 
-  for (i = 0; i < skillsContent.length; i++) {
+  for (let i = 0; i < skillsContent.length; i++) {
     skillsContent[i].className = "skills__content skills__close";
   }
   if (itemClass === "skills__content skills__close") {
@@ -141,16 +145,16 @@ function scrollActive() {
   sections.forEach((current) => {
     const sectionHeight = current.offsetHeight;
     const sectionTop = current.offsetTop - 50;
-    sectionId = current.getAttribute("id");
+    const sectionId = current.getAttribute("id");
+    const selector = ".nav__menu a[href*='#" + sectionId + "']";
+    const link = document.querySelector(selector);
 
-    if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-      document
-        .querySelector(".nav__menu a[href*=" + sectionId + "]")
-        .classList.add("active-link");
-    } else {
-      document
-        .querySelector(".nav__menu a[href*=" + sectionId + "]")
-        .classList.remove("active-link");
+    if (link) {
+      if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+        link.classList.add("active-link");
+      } else {
+        link.classList.remove("active-link");
+      }
     }
   });
 }
@@ -178,35 +182,45 @@ window.addEventListener("scroll", scrollUp);
 
 const themeButton = document.getElementById("theme-button");
 const darkTheme = "dark-theme";
-const iconTheme = "uil-sun";
+const iconMoon = "uil-moon";
+const iconSun = "uil-sun";
 
 // Previously selected topic (if user selected)
 const selectedTheme = localStorage.getItem("selected-theme");
 const selectedIcon = localStorage.getItem("selected-icon");
 
-// We obtain the current theme that the interface has by validating the dark-theme class
+// Helpers
 const getCurrentTheme = () =>
   document.body.classList.contains(darkTheme) ? "dark" : "light";
 const getCurrentIcon = () =>
-  themeButton.classList.contains(iconTheme) ? "uil-moon" : "uil-sun";
+  themeButton && themeButton.classList.contains(iconMoon) ? iconMoon : iconSun;
 
-// We validate if the user previously chose a topic
+// Apply saved theme if any
 if (selectedTheme) {
-  // If the validation is fulfilled, we ask what the issue was to know if we activated or deactivated the dark
-  document.body.classList[selectedTheme === "dark" ? "add" : "remove"](
-    darkTheme
-  );
-  themeButton.classList[selectedIcon === "uil-moon" ? "add" : "remove"](
-    iconTheme
-  );
+  document.body.classList[selectedTheme === "dark" ? "add" : "remove"](darkTheme);
 }
 
-// Activate / deactivate the theme manually with the button
-themeButton.addEventListener("click", () => {
-  // Add or remove the dark / icon theme
-  document.body.classList.toggle(darkTheme);
-  themeButton.classList.toggle(iconTheme);
-  // We save the theme and the current icon that the user chose
-  localStorage.setItem("selected-theme", getCurrentTheme());
-  localStorage.setItem("selected-icon", getCurrentIcon());
-});
+// Apply saved icon if the button exists
+if (themeButton && selectedIcon) {
+  if (selectedIcon === iconMoon) {
+    themeButton.classList.add(iconMoon);
+    themeButton.classList.remove(iconSun);
+  } else {
+    themeButton.classList.add(iconSun);
+    themeButton.classList.remove(iconMoon);
+  }
+}
+
+// Activate / deactivate the theme manually with the button (guarded)
+if (themeButton) {
+  themeButton.addEventListener("click", () => {
+    document.body.classList.toggle(darkTheme);
+    // swap icons
+    themeButton.classList.toggle(iconMoon);
+    themeButton.classList.toggle(iconSun);
+
+    // We save the theme and the current icon that the user chose
+    localStorage.setItem("selected-theme", getCurrentTheme());
+    localStorage.setItem("selected-icon", getCurrentIcon());
+  });
+}
